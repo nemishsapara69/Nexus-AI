@@ -1,0 +1,826 @@
+{
+  "name": "Nexus-AI — Autonomous Multi-Agent Personal Memory Framework",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "d5d9558d-a805-4a11-bdba-06fc8e68d9f9",
+      "name": "📱 Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        -112
+      ],
+      "webhookId": "nexus-ai-telegram-webhook",
+      "credentials": {
+        "telegramApi": {
+          "id": "q6jhcE9sqJHDgyy3",
+          "name": "Telegram account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "filter-is-bot",
+              "leftValue": "={{ $json.message.from.is_bot }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8c28a1a2-f959-4a41-b5a2-cfea270d8956",
+      "name": "🛡️ Loop Prevention (is_bot = false)",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -112
+      ],
+      "notes": "CRITICAL: Stops infinite bot-to-bot message loops. Only passes messages where is_bot is FALSE (i.e. real humans)."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-has-photo",
+              "leftValue": "={{ Object.keys($json.message).includes('photo') }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "acb701b7-cd94-4d92-8efb-019f9bfd06dd",
+      "name": "🔀 Smart Router (Text vs Photo)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -112
+      ],
+      "notes": "Routes message: TRUE branch → Photo/Vision Path. FALSE branch → Text/RAG Path."
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[$json.message.photo.length - 1].file_id }}",
+        "additionalFields": {}
+      },
+      "id": "c3c4fda6-f723-4b2c-9a52-44e36b0b83bd",
+      "name": "📥 Get Photo File",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        -128
+      ],
+      "webhookId": "a3e54142-27ec-4369-94da-965732df0609",
+      "credentials": {
+        "telegramApi": {
+          "id": "tCnQZ0pkW47KDxpo",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"meta-llama/llama-4-scout-17b-16e-instruct\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $('Code in JavaScript').item.json.imageUrl }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"You are Nexus-Vision, an intelligent OCR and document analysis AI. Analyze this image and extract ALL visible information. Structure your output as follows:\\n\\nDocument Type: (Bill / Prescription / Receipt / Note / Other)\\nDate: (if visible)\\nKey Entities: (Names, Organizations, Amounts, Items)\\nFull Text Extracted: (verbatim OCR)\\nSummary: (2-3 sentence intelligent summary for memory storage)\\nTags: (comma-separated searchable keywords)\\n\\nBe thorough and precise. This data will be stored in a personal knowledge base.\"\n        }\n      ]\n    }\n  ],\n  \"max_tokens\": 1024,\n  \"temperature\": 0.1\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "663e1502-c634-487a-805e-5769e003f21b",
+      "name": "👁️ Nexus-Vision (Groq Llama 3.2-11B)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -128
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "M1rDgsexZmHzHy8Z",
+          "name": "Header Auth account 2"
+        }
+      },
+      "notes": "Calls Groq Llama-3.2-11B Vision to perform OCR and structured extraction on uploaded photos."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v1/embed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"texts\": [\"{{ $('👁️ Nexus-Vision (Groq Llama 3.2-11B)').item.json.choices[0].message.content.replace(/\\n/g, ' ').replace(/\\\"/g, '') }}\"],\n  \"model\": \"embed-multilingual-v3.0\",\n  \"input_type\": \"search_document\",\n  \"embedding_types\": [\"float\"]\n}",
+        "options": {}
+      },
+      "id": "0f71ac15-e50b-436d-a026-bcb78e289df6",
+      "name": "🔢 Cohere Embed (Vision Result)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        -128
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "jKgcKnmIs2LNlEmi",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "Generates 1024-dim embeddings from vision OCR output using Cohere Multilingual v3.0."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO documents (content, metadata, embedding)\nVALUES (\n  '{{ $('👁️ Nexus-Vision (Groq Llama 3.2-11B)').item.json.choices[0].message.content.replace(/'/g, \"''\") }}',\n  '{\"source\": \"nexus_vision\", \"type\": \"photo\", \"timestamp\": \"{{ $now.toISO() }}\", \"chat_id\": \"{{ $('📱 Telegram Trigger').item.json.message.chat.id }}\"}'::jsonb,\n  '[{{ $('🔢 Cohere Embed (Vision Result)').item.json.embeddings.float[0] }}]'::vector(1024)\n)\nRETURNING id;",
+        "options": {}
+      },
+      "id": "95e13ade-1f09-41c5-8cb6-b4829c6f3d7b",
+      "name": "💾 Save Vision Memory (Supabase)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1360,
+        -128
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "vvcnrwtuPtMn09JC",
+          "name": "Postgres account 2"
+        }
+      },
+      "notes": "Stores OCR text + 1024-dim vector embedding in Supabase pgvector documents table."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📱 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ *Nexus-Vision Memory Saved!*\n\n{{ $('👁️ Nexus-Vision (Groq Llama 3.2-11B)').item.json.choices[0].message.content.split('\\n').slice(0,6).join('\\n') }}\n\n_Document stored in your Second Brain. You can retrieve it anytime by asking me naturally._",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "c677e50f-29a6-4cbe-aca0-10c5ba30777a",
+      "name": "📤 Confirm Vision Save",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        -128
+      ],
+      "webhookId": "3983ea25-a489-4899-997a-5d4bdb8d463a",
+      "credentials": {
+        "telegramApi": {
+          "id": "tCnQZ0pkW47KDxpo",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-save-prefix",
+              "leftValue": "={{ $json.intent }}",
+              "rightValue": "save",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4ab7be6c-056f-4133-af6f-5031e7a1f49d",
+      "name": "📝 Text Router (Save vs Retrieve)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        432,
+        160
+      ],
+      "notes": "TRUE: Message starts with 'Save:' → Manual memory ingestion. FALSE: Natural language query → AI Agent retrieval."
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.message.text;\nconst content = text.replace(/^Save:\\s*/i, '').trim();\nconst chatId = $input.item.json.message.chat.id;\nconst userId = $input.item.json.message.from.id;\nconst username = $input.item.json.message.from.username || 'unknown';\n\nreturn {\n  content,\n  chatId,\n  userId,\n  username,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "b15606b7-fc9b-4dba-ad66-d4f967548d40",
+      "name": "✂️ Extract Save Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        160
+      ],
+      "notes": "Strips the 'Save:' prefix and extracts clean content + metadata."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v1/embed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"texts\": [\"{{ $json.content }}\"],\n  \"model\": \"embed-multilingual-v3.0\",\n  \"input_type\": \"search_document\",\n  \"embedding_types\": [\"float\"]\n}",
+        "options": {}
+      },
+      "id": "fd36a48e-b687-4b93-be9b-71e213502b71",
+      "name": "🔢 Cohere Embed (Text Memory)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "jKgcKnmIs2LNlEmi",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('📱 Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🧠 *Memory Saved to Nexus-AI!*\n\n📝 *Content:* {{ $('✂️ Extract Save Content').item.json.content.substring(0,200) }}{{ $('✂️ Extract Save Content').item.json.content.length > 200 ? '...' : '' }}\n\n🆔 *Memory ID:* `{{ $json[0].id }}`\n⏰ *Timestamp:* {{ $('✂️ Extract Save Content').item.json.timestamp }}\n\n_Ask me anything about this later in natural language!_",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "840677f7-f396-422f-8090-85a79278a83a",
+      "name": "📤 Confirm Text Save",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        160
+      ],
+      "webhookId": "20b4558a-3aa2-4acd-9820-b79c258ac6d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "tCnQZ0pkW47KDxpo",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v1/embed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"texts\": [\"{{ $json.message.text }}\"],\n  \"model\": \"embed-multilingual-v3.0\",\n  \"input_type\": \"search_query\",\n  \"embedding_types\": [\"float\"]\n}",
+        "options": {}
+      },
+      "id": "1999ad98-5763-46b5-9aad-a99ce5aecde1",
+      "name": "🔢 Cohere Embed (Query)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "jKgcKnmIs2LNlEmi",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "Embeds the user's query with input_type=search_query for asymmetric retrieval."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM match_documents(\n  query_embedding := '[{{ $json.embeddings.float[0] }}]'::vector(1024),\n  match_threshold := 0.30,\n  match_count := 5\n);",
+        "options": {}
+      },
+      "id": "1ee1bf4d-5ff1-4f9c-b44d-70d2102d6148",
+      "name": "🔍 Vector Search (match_documents)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        912,
+        400
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "vvcnrwtuPtMn09JC",
+          "name": "Postgres account 2"
+        }
+      },
+      "notes": "Calls match_documents() SQL function with 1024-dim vector. Returns top-5 semantically similar memories above 0.70 cosine similarity threshold."
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.all();\nconst query = $('📱 Telegram Trigger').item.json.message.text;\nconst chatId = $('📱 Telegram Trigger').item.json.message.chat.id;\n\nlet context = '';\nif (results.length === 0 || !results[0].json.content) {\n  context = 'No relevant memories found.';\n} else {\n  context = results\n    .filter(r => r.json && r.json.content)\n    .map((r, i) => {\n      const similarity = r.json.similarity ? (r.json.similarity * 100).toFixed(1) : 'N/A';\n      const content = r.json.content.replace(/\\n/g, ' ').replace(/\"/g, \"'\").replace(/\\*\\*/g, '');\n      return `Memory${i+1}(${similarity}%): ${content}`;\n    })\n    .join(' || ');\n}\n\nreturn [{ json: { query, context, chatId, hasResults: results.length > 0 && !!results[0].json.content } }];"
+      },
+      "id": "40597c0a-28ae-4283-8c2b-5e300eb919fd",
+      "name": "🧩 Prepare RAG Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        400
+      ],
+      "notes": "Formats retrieved documents into a structured context string for the LLM prompt."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are Nexus-AI, a friendly personal memory assistant. STRICT RULES: 1) NEVER mention confidence levels, percentages, or similarity scores. 2) Always reply in the SAME language the user asked in - if Hindi then Hindi, if English then English. 3) Give short, direct, natural answers like a friend. 4) Never say 'based on provided memories' or 'according to data'. 5) If no memory found, say sorry naturally. 6) Never reveal technical details.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Query: {{ $json.query }} Memories: {{ $json.context }}\"\n    }\n  ],\n  \"max_tokens\": 1024,\n  \"temperature\": 0.3\n}",
+        "options": {
+          "timeout": 25000
+        }
+      },
+      "id": "1ed611c0-f1a3-4af2-80b5-ba0f8161a492",
+      "name": "🧠 Nexus-Brain (Groq Llama 3.3-70B)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "M1rDgsexZmHzHy8Z",
+          "name": "Header Auth account 2"
+        }
+      },
+      "notes": "Groq Llama 3.3-70B generates the final RAG-grounded response. Single-turn = no iteration limit issues."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('🧩 Prepare RAG Context').item.json.chatId }}",
+        "text": "=🤖 *Nexus-AI Response*\n\n{{ $json.choices[0].message.content }}\n\n",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "5a90112c-a174-4e16-98c8-2f09b6772916",
+      "name": "📤 Send RAG Answer",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1632,
+        400
+      ],
+      "webhookId": "c174d07a-8dd6-421a-86c4-a6d0d176f295",
+      "credentials": {
+        "telegramApi": {
+          "id": "tCnQZ0pkW47KDxpo",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://pcmmctpurvagqiyceepq.supabase.co/rest/v1/documents",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "={\n  \"apikey\": \"sb_secret_4KVj5ePRf7HfxIOxvr-ZDg_YPjlTTf2\",\n  \"Authorization\": \"Bearer sb_secret_4KVj5ePRf7HfxIOxvr-ZDg_YPjlTTf2\",\n  \"Content-Type\": \"application/json\",\n  \"Prefer\": \"return=representation\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $('✂️ Extract Save Content').item.json.content }}\",\n  \"metadata\": {\n    \"source\": \"manual_save\",\n    \"type\": \"text\",\n    \"timestamp\": \"{{ $('✂️ Extract Save Content').item.json.timestamp }}\",\n    \"chat_id\": \"{{ $('✂️ Extract Save Content').item.json.chatId }}\",\n    \"username\": \"{{ $('✂️ Extract Save Content').item.json.username }}\"\n  },\n  \"embedding\": {{ JSON.stringify($json.embeddings.float[0]) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1120,
+        160
+      ],
+      "id": "49642167-59a8-4301-af4d-9782d39ac7af",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fileData = $(\"📥 Get Photo File\").item.json;\nconst botToken = \"8249075528:AAEk35BmE9_B56zgifsubMp8VLVxruN2aqM\";\nconst filePath = fileData.file_path;\nconst fileUrl = \"https://api.telegram.org/file/bot\" + botToken + \"/\" + filePath;\n\nreturn [{\n  json: {\n    imageUrl: fileUrl\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -128
+      ],
+      "id": "ac7e100d-6a6a-4869-9d4e-b61f8ffd0e5f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const userMessage = $input.item.json.message?.text || \"\";\n\nconst response = await this.helpers.httpRequest({\n  method: \"POST\",\n  url: \"https://api.groq.com/openai/v1/chat/completions\",\n  headers: {\n    \"Content-Type\": \"application/json\",\n    \"Authorization\": \"Bearer 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\"\n  },\n  body: {\n    model: \"llama-3.3-70b-versatile\",\n    messages: [\n      {\n        role: \"system\",\n        content: `You are a classifier for a personal memory bot. Your job is to classify user messages into exactly one of three categories. Reply with ONLY one word: save, retrieve, or unknown.\n\nREPLY \"save\" when:\n- User states a personal fact (\"I love cricket\", \"mera naam Nemish hai\")\n- User shares preferences (\"my favourite color is blue\", \"mujhe pizza pasand hai\")\n- User shares memories or events (\"today I went to gym\", \"aaj mera exam tha\")\n- User shares information about people they know (\"my friend Raj lives in Surat\")\n- Message is a statement NOT a question\n- Contains words: remember, save, yaad rakh, store, note, mera...hai, I am, I have, I like, I love, my favourite, mujhe pasand\n\nREPLY \"retrieve\" when:\n- User asks any question (\"what do I like?\", \"mera favourite kya hai?\")\n- User wants to find or recall something (\"find my notes\", \"what did I save?\")\n- Message ends with ? or contains question words\n- Contains words: what, who, when, where, how, why, kya, kaun, kab, kahan, kaise, kyun, batao, tell me, find, search, recall, remember what, याद है\n\nREPLY \"unknown\" when:\n- Message is a greeting (\"hello\", \"hi\", \"hey\")\n- Message is a command (\"/start\", \"/help\")\n- Cannot clearly determine intent\n\nEXAMPLES:\n\"I love playing cricket\" → save\n\"mera favourite color blue hai\" → save\n\"my friend name is Raj\" → save\n\"today I had pizza for lunch\" → save\n\"mujhe coding pasand hai\" → save\n\"I am studying AIML\" → save\n\"what sport do I like?\" → retrieve\n\"mera favourite color kya hai?\" → retrieve\n\"tell me about my friend\" → retrieve\n\"what did I eat today?\" → retrieve\n\"mujhe kya pasand hai?\" → retrieve\n\"hello\" → unknown\n\"/start\" → unknown\n\"ok\" → unknown\n\"thanks\" → unknown\n\nCRITICAL RULES:\n- Reply with ONLY one word: save, retrieve, or unknown\n- No explanation, no punctuation, just the single word\n- When in doubt between save and retrieve, check if it's a question or statement\n- Hindi and English both follow same rules`\n      },\n      {\n        role: \"user\",\n        content: userMessage\n      }\n    ],\n    max_tokens: 5,\n    temperature: 0\n  },\n  json: true\n});\n\nconst rawIntent = response.choices[0].message.content.trim().toLowerCase();\n\n// Clean up in case model adds extra text\nlet intent = \"unknown\";\nif (rawIntent.includes(\"save\")) intent = \"save\";\nelse if (rawIntent.includes(\"retrieve\")) intent = \"retrieve\";\nelse intent = \"unknown\";\n\n// Log for debugging\nconsole.log(`Message: \"${userMessage}\" → Intent: \"${intent}\"`);\n\nreturn [{ json: { ...($input.item.json), intent } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        160
+      ],
+      "id": "f7aed69a-f1ba-4631-9b99-b9262eb3c99e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "38d3945b-5708-4c39-ad6e-a30d6a0ce81b",
+              "leftValue": "={{ $json.intent }}",
+              "rightValue": "unknown",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        400
+      ],
+      "id": "7fca6771-d8dc-44f0-af6a-03eb64bdada5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Hey Nemish! 🤖✨  Tum baat karo, main yaad rakhunga!  💾 Kuch store karna? → Bas bol do! 🔍 Kuch dhundna? → Bas pucho! 📸 Photo share karna? → Bhej do!  Main tumhara digital brain hun! 🧠⚡",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        384
+      ],
+      "id": "1838e98e-9dfe-4f98-88dd-de1f41793c8c",
+      "name": "Send a text message",
+      "webhookId": "94fd1454-534c-4784-9005-d5cb29ffde4e",
+      "credentials": {
+        "telegramApi": {
+          "id": "tCnQZ0pkW47KDxpo",
+          "name": "Unnamed credential"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "📱 Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Loop Prevention (is_bot = false)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Loop Prevention (is_bot = false)": {
+      "main": [
+        [
+          {
+            "node": "🔀 Smart Router (Text vs Photo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Smart Router (Text vs Photo)": {
+      "main": [
+        [
+          {
+            "node": "📥 Get Photo File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📥 Get Photo File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "👁️ Nexus-Vision (Groq Llama 3.2-11B)": {
+      "main": [
+        [
+          {
+            "node": "🔢 Cohere Embed (Vision Result)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔢 Cohere Embed (Vision Result)": {
+      "main": [
+        [
+          {
+            "node": "💾 Save Vision Memory (Supabase)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Save Vision Memory (Supabase)": {
+      "main": [
+        [
+          {
+            "node": "📤 Confirm Vision Save",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Text Router (Save vs Retrieve)": {
+      "main": [
+        [
+          {
+            "node": "✂️ Extract Save Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✂️ Extract Save Content": {
+      "main": [
+        [
+          {
+            "node": "🔢 Cohere Embed (Text Memory)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔢 Cohere Embed (Text Memory)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔢 Cohere Embed (Query)": {
+      "main": [
+        [
+          {
+            "node": "🔍 Vector Search (match_documents)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Vector Search (match_documents)": {
+      "main": [
+        [
+          {
+            "node": "🧩 Prepare RAG Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 Prepare RAG Context": {
+      "main": [
+        [
+          {
+            "node": "🧠 Nexus-Brain (Groq Llama 3.3-70B)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 Nexus-Brain (Groq Llama 3.3-70B)": {
+      "main": [
+        [
+          {
+            "node": "📤 Send RAG Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "📤 Confirm Text Save",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "👁️ Nexus-Vision (Groq Llama 3.2-11B)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "📝 Text Router (Save vs Retrieve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔢 Cohere Embed (Query)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "abe67cc0-8af9-4075-b861-2902715a6489",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1bfdb7343a300ff24c10104049c6baeced2f41467ca9e8269a884d53acb084f3"
+  },
+  "id": "7mtvPn-gNUfDuT71Qz76u",
+  "tags": []
+}
