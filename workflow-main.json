@@ -18,8 +18,8 @@
       "webhookId": "nexus-ai-telegram-webhook",
       "credentials": {
         "telegramApi": {
-          "id": "q6jhcE9sqJHDgyy3",
-          "name": "Telegram account 5"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -108,8 +108,8 @@
       "webhookId": "a3e54142-27ec-4369-94da-965732df0609",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -145,8 +145,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "M1rDgsexZmHzHy8Z",
-          "name": "Header Auth account 2"
+          "id": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL"
         }
       },
       "notes": "Calls Groq Llama-3.2-11B Vision to perform OCR and structured extraction on uploaded photos."
@@ -185,8 +185,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "jKgcKnmIs2LNlEmi",
-          "name": "Header Auth account"
+          "id": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL"
         }
       },
       "notes": "Generates 1024-dim embeddings from vision OCR output using Cohere Multilingual v3.0."
@@ -207,8 +207,8 @@
       ],
       "credentials": {
         "postgres": {
-          "id": "vvcnrwtuPtMn09JC",
-          "name": "Postgres account 2"
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "YOUR_POSTGRES_CREDENTIAL"
         }
       },
       "notes": "Stores OCR text + 1024-dim vector embedding in Supabase pgvector documents table."
@@ -233,8 +233,8 @@
       "webhookId": "3983ea25-a489-4899-997a-5d4bdb8d463a",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -339,8 +339,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "jKgcKnmIs2LNlEmi",
-          "name": "Header Auth account"
+          "id": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL"
         }
       }
     },
@@ -363,8 +363,8 @@
       "webhookId": "20b4558a-3aa2-4acd-9820-b79c258ac6d9",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -398,8 +398,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "jKgcKnmIs2LNlEmi",
-          "name": "Header Auth account"
+          "id": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL"
         }
       },
       "notes": "Embeds the user's query with input_type=search_query for asymmetric retrieval."
@@ -421,8 +421,8 @@
       "alwaysOutputData": true,
       "credentials": {
         "postgres": {
-          "id": "vvcnrwtuPtMn09JC",
-          "name": "Postgres account 2"
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "YOUR_POSTGRES_CREDENTIAL"
         }
       },
       "notes": "Calls match_documents() SQL function with 1024-dim vector. Returns top-5 semantically similar memories above 0.70 cosine similarity threshold."
@@ -473,8 +473,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "M1rDgsexZmHzHy8Z",
-          "name": "Header Auth account 2"
+          "id": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "YOUR_HTTP_HEADER_AUTH_CREDENTIAL"
         }
       },
       "notes": "Groq Llama 3.3-70B generates the final RAG-grounded response. Single-turn = no iteration limit issues."
@@ -498,8 +498,8 @@
       "webhookId": "c174d07a-8dd6-421a-86c4-a6d0d176f295",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -587,7 +587,7 @@
     {
       "parameters": {
         "chatId": "={{ $json.message.chat.id }}",
-        "text": "=Hey Nemish! 🤖✨  Tum baat karo, main yaad rakhunga!  💾 Kuch store karna? → Bas bol do! 🔍 Kuch dhundna? → Bas pucho! 📸 Photo share karna? → Bhej do!  Main tumhara digital brain hun! 🧠⚡",
+        "text": "=Hey there! 🤖✨  Tum baat karo, main yaad rakhunga!  💾 Kuch store karna? → Bas bol do! 🔍 Kuch dhundna? → Bas pucho! 📸 Photo share karna? → Bhej do!  Main tumhara digital brain hun! 🧠⚡",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -601,8 +601,8 @@
       "webhookId": "94fd1454-534c-4784-9005-d5cb29ffde4e",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -693,8 +693,8 @@
       "webhookId": "96a82a3e-d266-4c2a-a644-559faeee591f",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -750,8 +750,8 @@
       "webhookId": "c9a15527-8c0c-4b01-96a8-e87c5ea3a418",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
@@ -831,8 +831,8 @@
       "webhookId": "1716b802-d44a-45f6-97e6-7706eac04d38",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     }
@@ -1151,3 +1151,6 @@
     "instanceId": "1bfdb7343a300ff24c10104049c6baeced2f41467ca9e8269a884d53acb084f3"
   }
 }
+
+
+

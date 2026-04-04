@@ -2,7 +2,7 @@
   "nodes": [
     {
       "parameters": {
-        "chatId": "=5985601474",
+        "chatId": "=YOUR_TELEGRAM_CHAT_ID",
         "text": "={{ $json.message }}",
         "additionalFields": {
           "parse_mode": "MarkdownV2"
@@ -19,14 +19,14 @@
       "webhookId": "85814b57-f52d-4e09-9a17-4e0b0ea19fe1",
       "credentials": {
         "telegramApi": {
-          "id": "tCnQZ0pkW47KDxpo",
-          "name": "Unnamed credential"
+          "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
+          "name": "YOUR_TELEGRAM_CREDENTIAL"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Add this escape function at the top\nfunction escapeMarkdownV2(text) {\n  const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];\n  let escaped = text;\n  specialChars.forEach(char => {\n    escaped = escaped.split(char).join('\\\\' + char);\n  });\n  return escaped;\n}\n\nconst memories = $('Get Memories').all().map(i => i.json);\nconst reminders = $('Get Reminders').all().map(i => i.json);\n\n// Filter yesterday's memories using metadata.timestamp\nconst now = new Date();\nconst yesterday = new Date(now);\nyesterday.setDate(yesterday.getDate() - 1);\nyesterday.setHours(0, 0, 0, 0);\nconst today = new Date(now);\ntoday.setHours(0, 0, 0, 0);\n\nconst yesterdayMemories = memories.filter(mem => {\n  const ts = mem.metadata?.timestamp;\n  if (!ts) return false;\n  const memDate = new Date(ts);\n  return memDate >= yesterday && memDate < today;\n});\n\nlet textCount = 0;\nlet photoCount = 0;\n\nyesterdayMemories.forEach(mem => {\n  if (mem.metadata?.type === 'photo') {\n    photoCount++;\n  } else {\n    textCount++;\n  }\n});\n\nconst dateStr = now.toLocaleDateString('en-IN', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  year: 'numeric'\n});\n\nlet message = `☀️ *Good Morning, Nemish\\!*\\n\\n`;\nmessage += `📅 *${escapeMarkdownV2(dateStr)}*\\n\\n`;\n\nmessage += `📊 *Yesterday's Activity:*\\n`;\nif (yesterdayMemories.length === 0) {\n  message += `No new memories saved\\\\.\\n\\n`;\n} else {\n  message += `✅ Saved ${yesterdayMemories.length} new ${yesterdayMemories.length === 1 ? 'memory' : 'memories'}\\n`;\n  if (textCount > 0) message += `   📝 Text: ${textCount}\\n`;\n  if (photoCount > 0) message += `   📸 Photos: ${photoCount}\\n`;\n  message += `\\n`;\n}\n\nmessage += `⏰ *Today's Reminders:*\\n`;\nif (reminders.length === 0) {\n  message += `No reminders scheduled\\\\.\\n\\n`;\n} else {\n  message += `You have ${reminders.length} ${reminders.length === 1 ? 'reminder' : 'reminders'}:\\n\\n`;\n  reminders.forEach((reminder, index) => {\n    const time = new Date(reminder.remind_at).toLocaleTimeString('en-IN', {\n      hour: '2-digit',\n      minute: '2-digit',\n      hour12: true\n    });\n    message += `${index + 1}\\\\. ${escapeMarkdownV2(reminder.message)} — ${escapeMarkdownV2(time)}\\n`;\n  });\n  message += `\\n`;\n}\n\nmessage += `💡 *Quick Tip:* Send photos/text anytime to save to your Second Brain\\\\!\\n\\n`;\nmessage += `_Have a productive day\\\\! 🚀_`;\n\nreturn [{ json: { message } }];"
+        "jsCode": "// Add this escape function at the top\nfunction escapeMarkdownV2(text) {\n  const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];\n  let escaped = text;\n  specialChars.forEach(char => {\n    escaped = escaped.split(char).join('\\\\' + char);\n  });\n  return escaped;\n}\n\nconst memories = $('Get Memories').all().map(i => i.json);\nconst reminders = $('Get Reminders').all().map(i => i.json);\n\n// Filter yesterday's memories using metadata.timestamp\nconst now = new Date();\nconst yesterday = new Date(now);\nyesterday.setDate(yesterday.getDate() - 1);\nyesterday.setHours(0, 0, 0, 0);\nconst today = new Date(now);\ntoday.setHours(0, 0, 0, 0);\n\nconst yesterdayMemories = memories.filter(mem => {\n  const ts = mem.metadata?.timestamp;\n  if (!ts) return false;\n  const memDate = new Date(ts);\n  return memDate >= yesterday && memDate < today;\n});\n\nlet textCount = 0;\nlet photoCount = 0;\n\nyesterdayMemories.forEach(mem => {\n  if (mem.metadata?.type === 'photo') {\n    photoCount++;\n  } else {\n    textCount++;\n  }\n});\n\nconst dateStr = now.toLocaleDateString('en-IN', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  year: 'numeric'\n});\n\nlet message = `☀️ *Good Morning\\!*\\n\\n`;\nmessage += `📅 *${escapeMarkdownV2(dateStr)}*\\n\\n`;\n\nmessage += `📊 *Yesterday's Activity:*\\n`;\nif (yesterdayMemories.length === 0) {\n  message += `No new memories saved\\\\.\\n\\n`;\n} else {\n  message += `✅ Saved ${yesterdayMemories.length} new ${yesterdayMemories.length === 1 ? 'memory' : 'memories'}\\n`;\n  if (textCount > 0) message += `   📝 Text: ${textCount}\\n`;\n  if (photoCount > 0) message += `   📸 Photos: ${photoCount}\\n`;\n  message += `\\n`;\n}\n\nmessage += `⏰ *Today's Reminders:*\\n`;\nif (reminders.length === 0) {\n  message += `No reminders scheduled\\\\.\\n\\n`;\n} else {\n  message += `You have ${reminders.length} ${reminders.length === 1 ? 'reminder' : 'reminders'}:\\n\\n`;\n  reminders.forEach((reminder, index) => {\n    const time = new Date(reminder.remind_at).toLocaleTimeString('en-IN', {\n      hour: '2-digit',\n      minute: '2-digit',\n      hour12: true\n    });\n    message += `${index + 1}\\\\. ${escapeMarkdownV2(reminder.message)} — ${escapeMarkdownV2(time)}\\n`;\n  });\n  message += `\\n`;\n}\n\nmessage += `💡 *Quick Tip:* Send photos/text anytime to save to your Second Brain\\\\!\\n\\n`;\nmessage += `_Have a productive day\\\\! 🚀_`;\n\nreturn [{ json: { message } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -254,3 +254,5 @@
     "instanceId": "1bfdb7343a300ff24c10104049c6baeced2f41467ca9e8269a884d53acb084f3"
   }
 }
+
+
