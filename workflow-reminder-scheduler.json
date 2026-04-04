@@ -70,7 +70,7 @@
       ],
       "id": "b62bc065-0b39-44dd-92c6-375bc2f3a967",
       "name": "Send a text message",
-      "webhookId": "28ef72d8-3779-46b5-8ebe-352011a38b8e",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -215,8 +215,9 @@
   "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "1bfdb7343a300ff24c10104049c6baeced2f41467ca9e8269a884d53acb084f3"
+    "instanceId": "YOUR_INSTANCE_ID"
   }
 }
+
 
 

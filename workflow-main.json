@@ -15,7 +15,7 @@
         -256,
         -112
       ],
-      "webhookId": "nexus-ai-telegram-webhook",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -105,7 +105,7 @@
         432,
         -128
       ],
-      "webhookId": "a3e54142-27ec-4369-94da-965732df0609",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -230,7 +230,7 @@
         1600,
         -128
       ],
-      "webhookId": "3983ea25-a489-4899-997a-5d4bdb8d463a",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -360,7 +360,7 @@
         1600,
         480
       ],
-      "webhookId": "20b4558a-3aa2-4acd-9820-b79c258ac6d9",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -495,7 +495,7 @@
         1600,
         688
       ],
-      "webhookId": "c174d07a-8dd6-421a-86c4-a6d0d176f295",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -598,7 +598,7 @@
       ],
       "id": "1838e98e-9dfe-4f98-88dd-de1f41793c8c",
       "name": "Send a text message",
-      "webhookId": "94fd1454-534c-4784-9005-d5cb29ffde4e",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -690,7 +690,7 @@
       ],
       "id": "c2809596-c4f6-4ae4-85c2-97c2224dddb6",
       "name": "Send a text message1",
-      "webhookId": "96a82a3e-d266-4c2a-a644-559faeee591f",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -747,7 +747,7 @@
       ],
       "id": "31add834-9b6e-43e5-bc24-2fb4ecb02922",
       "name": "Send a text message2",
-      "webhookId": "c9a15527-8c0c-4b01-96a8-e87c5ea3a418",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -828,7 +828,7 @@
       ],
       "id": "d5cb4b43-b9ec-4eb5-bb77-286fd185ea21",
       "name": "📤 Send Export",
-      "webhookId": "1716b802-d44a-45f6-97e6-7706eac04d38",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "telegramApi": {
           "id": "YOUR_TELEGRAM_CREDENTIAL_ID",
@@ -1148,9 +1148,10 @@
   "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "1bfdb7343a300ff24c10104049c6baeced2f41467ca9e8269a884d53acb084f3"
+    "instanceId": "YOUR_INSTANCE_ID"
   }
 }
+
 
 
 
