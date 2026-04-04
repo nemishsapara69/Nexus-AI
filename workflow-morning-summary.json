@@ -1,0 +1,256 @@
+﻿{
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "=5985601474",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        -112
+      ],
+      "id": "9a727de5-fec4-45ce-817a-aecbf6b3bc03",
+      "name": "Send a text message",
+      "webhookId": "85814b57-f52d-4e09-9a17-4e0b0ea19fe1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tCnQZ0pkW47KDxpo",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Add this escape function at the top\nfunction escapeMarkdownV2(text) {\n  const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];\n  let escaped = text;\n  specialChars.forEach(char => {\n    escaped = escaped.split(char).join('\\\\' + char);\n  });\n  return escaped;\n}\n\nconst memories = $('Get Memories').all().map(i => i.json);\nconst reminders = $('Get Reminders').all().map(i => i.json);\n\n// Filter yesterday's memories using metadata.timestamp\nconst now = new Date();\nconst yesterday = new Date(now);\nyesterday.setDate(yesterday.getDate() - 1);\nyesterday.setHours(0, 0, 0, 0);\nconst today = new Date(now);\ntoday.setHours(0, 0, 0, 0);\n\nconst yesterdayMemories = memories.filter(mem => {\n  const ts = mem.metadata?.timestamp;\n  if (!ts) return false;\n  const memDate = new Date(ts);\n  return memDate >= yesterday && memDate < today;\n});\n\nlet textCount = 0;\nlet photoCount = 0;\n\nyesterdayMemories.forEach(mem => {\n  if (mem.metadata?.type === 'photo') {\n    photoCount++;\n  } else {\n    textCount++;\n  }\n});\n\nconst dateStr = now.toLocaleDateString('en-IN', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  year: 'numeric'\n});\n\nlet message = `☀️ *Good Morning, Nemish\\!*\\n\\n`;\nmessage += `📅 *${escapeMarkdownV2(dateStr)}*\\n\\n`;\n\nmessage += `📊 *Yesterday's Activity:*\\n`;\nif (yesterdayMemories.length === 0) {\n  message += `No new memories saved\\\\.\\n\\n`;\n} else {\n  message += `✅ Saved ${yesterdayMemories.length} new ${yesterdayMemories.length === 1 ? 'memory' : 'memories'}\\n`;\n  if (textCount > 0) message += `   📝 Text: ${textCount}\\n`;\n  if (photoCount > 0) message += `   📸 Photos: ${photoCount}\\n`;\n  message += `\\n`;\n}\n\nmessage += `⏰ *Today's Reminders:*\\n`;\nif (reminders.length === 0) {\n  message += `No reminders scheduled\\\\.\\n\\n`;\n} else {\n  message += `You have ${reminders.length} ${reminders.length === 1 ? 'reminder' : 'reminders'}:\\n\\n`;\n  reminders.forEach((reminder, index) => {\n    const time = new Date(reminder.remind_at).toLocaleTimeString('en-IN', {\n      hour: '2-digit',\n      minute: '2-digit',\n      hour12: true\n    });\n    message += `${index + 1}\\\\. ${escapeMarkdownV2(reminder.message)} — ${escapeMarkdownV2(time)}\\n`;\n  });\n  message += `\\n`;\n}\n\nmessage += `💡 *Quick Tip:* Send photos/text anytime to save to your Second Brain\\\\!\\n\\n`;\nmessage += `_Have a productive day\\\\! 🚀_`;\n\nreturn [{ json: { message } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -112
+      ],
+      "id": "7403f406-e069-43ff-b0d1-9845d87ec06c",
+      "name": "Build Message"
+    },
+    {
+      "parameters": {
+        "url": "https://pcmmctpurvagqiyceepq.supabase.co/rest/v1/reminders",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "remind_at",
+              "value": "=gte.{{ $('Compute Dates').item.json.todayISO }}"
+            },
+            {
+              "name": "sent",
+              "value": "eq.false"
+            },
+            {
+              "name": "select",
+              "value": "message,remind_at"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_SUPABASE_SERVICE_ROLE_JWT"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_SUPABASE_SERVICE_ROLE_JWT"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        -16
+      ],
+      "id": "4759e403-10a2-4bd2-ac0c-7bb5a6696b3b",
+      "name": "Get Reminders"
+    },
+    {
+      "parameters": {
+        "url": "https://pcmmctpurvagqiyceepq.supabase.co/rest/v1/documents",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "=id,metadata"
+            },
+            {
+              "name": "select",
+              "value": "id,metadata"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_SUPABASE_SERVICE_ROLE_JWT"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_SUPABASE_SERVICE_ROLE_JWT"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        -224
+      ],
+      "id": "c0a0fa88-07f0-45dc-a6e0-e6d003e87291",
+      "name": "Get Memories"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst yesterday = new Date(now);\nyesterday.setDate(yesterday.getDate() - 1);\nyesterday.setHours(0, 0, 0, 0);\nconst today = new Date(now);\ntoday.setHours(0, 0, 0, 0);\n\nreturn [{\n  json: {\n    yesterdayISO: yesterday.toISOString(),\n    todayISO: today.toISOString(),\n    todayEndISO: new Date(today.setHours(23, 59, 59, 999)).toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        -112
+      ],
+      "id": "633a30d3-2138-446f-a7e2-8dffc7e4e446",
+      "name": "Compute Dates"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        -112
+      ],
+      "id": "0f0c1297-4840-452e-bd68-14384ce36259",
+      "name": "🌅 Every Morning 8 AM"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -192,
+        -224
+      ],
+      "id": "7ad4d72a-f8e8-448a-8377-bf1f67f79632",
+      "name": "Merge"
+    }
+  ],
+  "connections": {
+    "Build Message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Reminders": {
+      "main": [
+        [
+          {
+            "node": "Build Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Memories": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Dates": {
+      "main": [
+        [
+          {
+            "node": "Get Reminders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Memories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌅 Every Morning 8 AM": {
+      "main": [
+        [
+          {
+            "node": "Compute Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Build Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1bfdb7343a300ff24c10104049c6baeced2f41467ca9e8269a884d53acb084f3"
+  }
+}
